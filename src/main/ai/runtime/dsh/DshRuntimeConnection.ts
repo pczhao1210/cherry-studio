@@ -28,7 +28,7 @@ import { toolApprovalRegistry } from '@main/ai/toolApproval/ToolApprovalRegistry
 import { evaluateUserDataSqliteGuard } from '@main/ai/toolApproval/userDataSqliteGuard'
 import { chatErrorContext } from '@main/ai/utils/chatErrorContext'
 import { resolveKnowledgeBaseScope } from '@main/ai/utils/knowledgeScope'
-import { getBinaryExecutionEnv, mergePathSuffixes } from '@main/utils/binaryEnv'
+import { getBinaryExecutionEnv, getBinaryShimsDir, mergePathSuffixes } from '@main/utils/binaryEnv'
 import {
   getMiseEnvEntries,
   getPathFromEnvironment,
@@ -468,7 +468,11 @@ export class DshRuntimeConnection implements AgentRuntimeConnection {
       const rawMiseEnv = Object.fromEntries(getMiseEnvEntries(rawShellEnv))
       const hasUserMise = hasUserMiseEnv(rawShellEnv)
       const tailDirs = resolveCherryPathTailDirs(hasUserMise)
-      const binaryExecutionEnv = mergePathSuffixes(loginPath !== undefined ? { PATH: loginPath } : {}, tailDirs)
+      const binaryExecutionEnv = mergePathSuffixes(
+        loginPath !== undefined ? { PATH: loginPath } : {},
+        tailDirs,
+        hasUserMise ? [getBinaryShimsDir()] : []
+      )
       const cherryMiseEnv = getBinaryExecutionEnv()
       const miseEnv = hasUserMise ? rawMiseEnv : cherryMiseEnv
       // Complete replacement env — deliberate credential scope: the child sees
